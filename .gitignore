@@ -1,0 +1,6 @@
+.DS_Store
+.project
+.swp
+__pycache__
+Donnees_inconnue.npz
+*.pyc
