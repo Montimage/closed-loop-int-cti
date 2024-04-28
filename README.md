@@ -8,7 +8,7 @@ This repository contains code of a demonstration of a closed-loop which uses:
 
 The architecture of this demonstration is as the following figure.
 
-<img src="img/archi.png"/>
+<img width=600px src="img/archi.png"/>
 
 ###########################################################
 # Requirement
@@ -20,16 +20,6 @@ The architecture of this demonstration is as the following figure.
 ###########################################################
 # Installation
 
-## Redis
-
-```bash
-sudo apt update
-sudo apt install redis-server
-# check status
-sudo service redis-server status
-# start it if not executing
-sudo service redis-server start
-```
 
 ## MMT-Operator
 ### NodeJS
@@ -45,16 +35,6 @@ sudo apt-get update
 sudo apt-get install nodejs -y
 ```
 
-### MongoDB 4.4
-
-```bash
-sudo apt-get install -y gnupg curl
-curl -fsSL https://pgp.mongodb.com/server-4.4.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-4.4.gpg --dearmor
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-4.4.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-sudo apt-get update
-sudo apt-get install -y mongodb-org
-sudo service mongod start
-```
 
 ```bash
 sudo dpkg -i src/mmt/mmt-operator*
@@ -114,12 +94,6 @@ The reaction is excuted automatically when having an alert. To avoid several exe
 
 To enable or disable the auto execution, you can modify `auto_perform_reaction` parameter in `/opt/mmt/operator/config.json`. When auto execution is disable, a button appears in GUI when having a alert and user needs to click on the button to perform the reaction.
 
-## ML-detector
-
-ML detector module is currently filter out any traffic which are not from the given IPs in `src-ips.txt`. This intention is to verify only on direction traffic, either from client to server, or vice versa.
-
-You need to add source IPs of traffic to be verify in `src-ips.txt`.
-
 ## Redis communication
 
 This version uses Redis bus as a moyen of communication. It is easier than using socket when having multi listeners. 
@@ -142,47 +116,61 @@ If so, you need to update the publisher and the subscribers:
 ###########################################################
 # Execution
 
-## Start Redis server if it does not:
+## Start Redis and MongoDB servers
 
 ```bash
-sudo service redis-server start
+docker run --rm -d --name mi-redis -p 6379:6379 redis
+docker run --rm -d --name mi-mongo -p 27017:27017 mongo:4.0
 ```
 
-## Start ML-detector
-
+## Start CTI
 ```bash
-cd src/ML-detector
-python3 ./main.py 127.0.0.1 6379
-```
+docker run --rm -d --name mi-cti -p 4000:4000 montimage/cti-api:ctiswagger ./root/start-swagger.sh
+``
 
-## Start MongoDB
-
-```bash
-sudo service mongod start
-```
 
 ## Start MMT-Operator
 
 ```bash
-sudo mmt-operator
+sudo systemctl start mmt-operator
 ```
 
 The open your web browser at http://localhost:8080 and use `admin/mmt2nm` as username/password to login to GUI.
 
-## Start CTI
+## Start ML-detector
+
 ```bash
-docker run --name mi-cti -p 3000:4000 -d montimage/cti-api:ctiswagger ./root/start-swagger.sh
+cd src/ML-detector && python3 ./main.py
 ```
 
-## Start P4 switch
-```bash
 
+## Start P4 switch
+open a new terminal, then run:
+```bash
+cd src/p4 && sudo ./start-switch.sh
+# after starting, 3 dummy NICs hve been created:
+# veth-mi-1 ===== [((( BMv2 P4 switch )))] ===== veth-mi-2
+#                        *
+#                        *
+#                    veth-mi-int
 ```
 
 ## Start INT-collector
-
+open a new terminal, then run:
 ```bash
 # sudo mmt-probe -i <monitor-nic>
-sudo mmt-probe -i l4s-int-dummy
+sudo mmt-probe -i veth-mi-int
 ```
 
+## Replacy traffic
+open a new terminal, then run:
+```bash
+sudo tcpreplay -i veth-mi-1 src/pcap/normal.pcap
+# you should see that the traffic is normally forwarded to veth-mi-2, 
+#   e.g., using "sudo tcpdump -i veth-mi-2" to check.
+#
+# However, if you replace malicious traffc, pcap/malicious-blocked.pcap, then you should see that:
+# - ML-dector raise alerts
+# - MMT-Operator show alerts in Security tab
+# - Traffic is blocked at the switch, it is not forwarded to veth-mi-2
+```
