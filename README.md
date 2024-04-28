@@ -1,4 +1,4 @@
-###########################################################
+
 # A Closed-loop using INT - ML - CTI
 
 This repository contains code of a demonstration of a closed-loop which uses:
@@ -10,14 +10,14 @@ The architecture of this demonstration is as the following figure.
 
 <img width=600px src="img/archi.png"/>
 
-###########################################################
+
 # Requirement
 - Ubuntu 20.04 amd 64bit
 - At least 2 CPUs, 2 GB of RAM and 5 GB of hard driver
 - MMT will be installed inside the "/opt/mmt" folder.
 - No process is listening on port 8080 which will be attributed to MMT-Operator web server
 
-###########################################################
+
 # Installation
 
 
@@ -85,7 +85,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 
 Further details [here](https://docs.docker.com/engine/install/ubuntu/)
 
-###########################################################
+
 # Configuration
 
 ## Enable/disable auto reaction
@@ -113,7 +113,7 @@ If so, you need to update the publisher and the subscribers:
 
 
 
-###########################################################
+
 # Execution
 
 ## Start Redis and MongoDB servers
