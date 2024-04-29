@@ -126,7 +126,7 @@ docker run --rm -d --name mi-mongo -p 27017:27017 mongo:4.0
 ## Start CTI
 ```bash
 docker run --rm -d --name mi-cti -p 4000:4000 montimage/cti-api:ctiswagger ./root/start-swagger.sh
-``
+```
 
 
 ## Start MMT-Operator
