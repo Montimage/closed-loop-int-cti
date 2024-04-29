@@ -102,16 +102,6 @@ This version uses Redis bus as a moyen of communication. It is easier than using
 - MMT-Operator (GUI) subscribes to this topic to get reports to show graphes
 - ML-detector subscribes to this topic to get reports to perform detection. If it detects something, it publishes an alert on the same topic `report`. The alerts' format differs from reports' format. ML-detector filters out any other messages (alerts/reports used by MMT-Operator).
 
-By default, Redis is at `127.0.0.1`, port `6379`. If this port is in conflict, then you can use another port by changing `port` parameter at `/etc/redis/redis.conf`.
-
-If so, you need to update the publisher and the subscribers:
-
-- INT-collector: the parameters in `redis-output` block
-- MMT-Operator: the parameters in `redis_input` block
-- ML-detector: the 2 running parameters
-
-
-
 
 
 # Execution
